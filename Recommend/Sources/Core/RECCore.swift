@@ -10,6 +10,8 @@ import Foundation
 import UIKit.UIDevice
 
 final class RECCore {
+    public static let keychainAccount: String = "Recommend_keychain_account"
+    public static let keychainService: String = "Recommend_keychain_service"
     let device: UIDevice = .current
     let accountId: String
     let userDefaults: UserDefaults
@@ -49,22 +51,32 @@ final class RECCore {
     
     func getDeviceId() throws -> String {
         let device = UIDevice.current
+        var deviceId: String?
+        let storedKeychainDeviceId = RECKeychainService.getItem(service: Self.keychainService, account: Self.keychainAccount)
         
-        if let storedDeviceId = userDefaults.deviceId {
-            if storedDeviceId.isEmpty == false {
-                return storedDeviceId
+        if let storedKeychainDeviceId {
+            if !storedKeychainDeviceId.isEmpty{
+                deviceId = storedKeychainDeviceId
+            } else {
+                RECKeychainService.removeItem(service: Self.keychainService, account: Self.keychainAccount)
+            }
+        } else if let storedDefaultsDeviceId = userDefaults.deviceId {
+            if !storedDefaultsDeviceId.isEmpty{
+                deviceId = storedDefaultsDeviceId
             } else {
                 userDefaults.deviceId = nil
             }
+        } else {
+            deviceId = device.identifierForVendor?.uuidString ?? UUID().uuidString
         }
         
-        let deviceId: String! = device.identifierForVendor?.uuidString
-        
-        guard deviceId?.isEmpty == false else {
+        guard let deviceId,
+              deviceId.isEmpty == false else {
             throw RECInvalidDeviceIdError(deviceId: deviceId)
         }
-
-        userDefaults.deviceId = deviceId
+        
+        RECKeychainService.saveItem(service: Self.keychainService, account: Self.keychainAccount, data: deviceId)
+        
         return deviceId
     }
     

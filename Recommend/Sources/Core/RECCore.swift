@@ -53,19 +53,14 @@ final class RECCore {
         let device = UIDevice.current
         var deviceId: String?
         let storedKeychainDeviceId = RECKeychainService.getItem(service: Self.keychainService, account: Self.keychainAccount)
+        let storedDefaultsDeviceId = userDefaults.deviceId
         
-        if let storedKeychainDeviceId {
-            if !storedKeychainDeviceId.isEmpty{
-                deviceId = storedKeychainDeviceId
-            } else {
-                RECKeychainService.removeItem(service: Self.keychainService, account: Self.keychainAccount)
-            }
-        } else if let storedDefaultsDeviceId = userDefaults.deviceId {
-            if !storedDefaultsDeviceId.isEmpty{
-                deviceId = storedDefaultsDeviceId
-            } else {
-                userDefaults.deviceId = nil
-            }
+        if let storedDefaultsDeviceId,
+           !storedDefaultsDeviceId.isEmpty {
+            deviceId = storedDefaultsDeviceId
+        } else if let storedKeychainDeviceId,
+                  !storedKeychainDeviceId.isEmpty {
+            deviceId = storedKeychainDeviceId
         } else {
             deviceId = device.identifierForVendor?.uuidString ?? UUID().uuidString
         }
@@ -75,6 +70,8 @@ final class RECCore {
             throw RECInvalidDeviceIdError(deviceId: deviceId)
         }
         
+        userDefaults.deviceId = nil
+        RECKeychainService.removeItem(service: Self.keychainService, account: Self.keychainAccount)
         RECKeychainService.saveItem(service: Self.keychainService, account: Self.keychainAccount, data: deviceId)
         
         return deviceId

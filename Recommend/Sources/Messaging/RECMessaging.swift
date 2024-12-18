@@ -71,9 +71,10 @@ final class RECMessaging: NSObject {
     
     func application(
         _ application: UIKit.UIApplication,
-        didReceiveRemoteNotification userInfo: [AnyHashable: Any]
+        didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+        completion: ((Bool) -> Void)? = nil
     ) {
-        wrappedPushManager?.handleReceivedRemoteNotification(userInfo)
+        wrappedPushManager?.handleReceivedRemoteNotification(userInfo, completion: completion)
     }
     
     func userNotificationCenter(

@@ -99,12 +99,14 @@ final class RECMessagingPushManager {
     
     // MARK: Event
     
-    private func trackEvent(_ event: RECMessagingPushEvent) {
+    private func trackEvent(_ event: RECMessagingPushEvent, completion: ((Bool) -> Void)? = nil) {
         failedEvents.removeAll(where: { $0.id == event.id })
         apiService.trackPushEvent(event) { error in
             if error != nil {
                 self.failedEvents.append(event)
+                completion?(false)
             }
+            completion?(true)
         }
     }
     
@@ -129,16 +131,18 @@ final class RECMessagingPushManager {
     }
     
     func handleReceivedRemoteNotification(
-        _ userInfo: [AnyHashable: Any]
+        _ userInfo: [AnyHashable: Any],
+        completion: ((Bool) -> Void)? = nil
     ) {
         guard
             let event = RECMessagingPushEvent(
                 userInfo: userInfo,
                 eventTime: Date().secondsSince1970)
         else {
+            completion?(false)
             return
         }
-        trackEvent(event)
+        trackEvent(event, completion: completion)
     }
     
     func handleReceivedNotificationResponse(

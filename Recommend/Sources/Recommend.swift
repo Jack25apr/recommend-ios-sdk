@@ -192,11 +192,13 @@ public final class Recommend {
     
     public func application(
         _ application: UIKit.UIApplication,
-        didReceiveRemoteNotification userInfo: [AnyHashable: Any]
+        didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+        completion: ((Bool) -> Void)? = nil
     ) {
         messaging?.application(
             application,
-            didReceiveRemoteNotification: userInfo)
+            didReceiveRemoteNotification: userInfo, 
+            completion: completion)
     }
     
     // MARK: User Notifications
